@@ -1,675 +1,758 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>WHITE_HACKER QUEST</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>WHITE_HACKER | Pixel MiniQuest</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-    :root {
-      --bg-dark: #1a1c2c;
-      --bg-mid: #333c57;
-      --bg-light: #566c86;
-      --pixel-green: #38b764;
-      --pixel-blue: #5d60ed;
-      --pixel-red: #b33831;
-      --pixel-yellow: #f4b41a;
-      --pixel-purple: #9b5de5;
-      --pixel-cyan: #00f5d4;
-      --text: #f8f8f8;
-      --text-dark: #1a1c2c;
+    :root{
+      --shell:#d6d1c6;
+      --shell2:#b9b2a5;
+      --frame1:#3b3b3b;
+      --frame2:#232323;
+      --screen1:#142014;
+      --screen2:#1c2b1c;
+      --pix:#c9ffb8;
+      --pixDim:rgba(201,255,184,.72);
+      --red:#b33831;
+      --blue:#5d60ed;
+      --purple:#9b5de5;
+      --green:#38b764;
+      --yellow:#f4b41a;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      display:grid;
+      place-items:center;
+      font-family:var(--mono);
+      background:
+        radial-gradient(1100px 600px at 50% -10%, rgba(255,255,255,.55), transparent),
+        linear-gradient(180deg, #f3f2ee, #e8e4dc);
+      padding:14px;
+      overflow-x:hidden;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      font-family: 'Press Start 2P', monospace;
-      background: var(--bg-dark);
-      color: var(--text);
+    .wrap{width:min(480px,100%); filter:drop-shadow(0 18px 50px rgba(0,0,0,.18));}
+    .gb{
+      background:linear-gradient(180deg,var(--shell),var(--shell2));
+      border-radius:26px;
+      padding:14px;
+      border:1px solid rgba(0,0,0,.10);
+    }
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:4px 6px 10px;
+      color:rgba(0,0,0,.6); font-weight:800; font-size:11px;
+    }
+    .badge{
+      display:flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      background:rgba(255,255,255,.55);
+      border:1px solid rgba(0,0,0,.08);
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:#77d36a;box-shadow:0 0 14px rgba(120,255,120,.45)}
+    .coin-display{
+      display:flex;align-items:center;gap:4px;
+      color:#fff;font-weight:900;
+      background:linear-gradient(180deg,#f4b41a,#d49000);
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.15);
+      text-shadow:1px 1px 0 rgba(0,0,0,.3);
     }
 
-    /* 메인 컨테이너 */
-    .game-container {
-      width: 100%;
-      height: 100%;
-      max-width: 500px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(180deg, var(--bg-dark) 0%, #252a40 100%);
-      border-left: 4px solid var(--bg-mid);
-      border-right: 4px solid var(--bg-mid);
+    .frame{
+      background:linear-gradient(180deg,var(--frame1),var(--frame2));
+      border-radius:20px;
+      padding:10px;
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .screen{
+      position:relative;
+      border-radius:12px;
+      border:2px solid rgba(0,0,0,.45);
+      background:
+        radial-gradient(600px 300px at 50% 0%, rgba(120,255,120,.10), transparent 60%),
+        linear-gradient(180deg,var(--screen1),var(--screen2));
+      overflow:hidden;
+    }
+    .screen::before{
+      content:"";
+      position:absolute; inset:0;
+      background: repeating-linear-gradient(180deg,
+        rgba(0,0,0,.08), rgba(0,0,0,.08) 1px,
+        transparent 3px, transparent 6px);
+      mix-blend-mode:multiply;
+      pointer-events:none;
+      opacity:.35;
+      z-index:2;
     }
 
-    /* 상단 HUD */
-    .hud {
-      background: var(--bg-mid);
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 4px solid var(--bg-light);
-      font-size: 10px;
+    canvas{
+      width:100%;
+      aspect-ratio: 320 / 320;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      display:block;
     }
 
-    .hud-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .led {
-      width: 10px;
-      height: 10px;
-      background: var(--pixel-red);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--pixel-red);
-      animation: blink 1.5s infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    .hud-right {
-      color: var(--pixel-yellow);
-    }
-
-    /* 게임 화면 */
-    .game-screen {
-      flex: 1;
-      position: relative;
-      background: 
-        linear-gradient(180deg, #252a40 0%, #1a1c2c 100%);
-      overflow: hidden;
-      min-height: 320px;
-    }
-
-    /* 맵 그리드 */
-    .map {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      display: grid;
-      grid-template-columns: repeat(3, 80px);
-      grid-template-rows: repeat(3, 80px);
-      gap: 20px;
-    }
-
-    /* 방 타일 */
-    .room {
-      width: 80px;
-      height: 80px;
-      background: var(--bg-mid);
-      border: 4px solid var(--bg-light);
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-    }
-
-    .room:hover {
-      transform: scale(1.05);
-      border-color: var(--pixel-yellow);
-    }
-
-    .room.locked {
-      opacity: 0.5;
-      filter: grayscale(0.8);
-    }
-
-    .room.locked::after {
-      content: '🔒';
-      position: absolute;
-      font-size: 16px;
-      top: 4px;
-      right: 4px;
-    }
-
-    .room-label {
-      font-size: 6px;
-      margin-top: 4px;
-      color: var(--text);
-    }
-
-    .room-start { border-color: var(--pixel-red); }
-    .room-profile { border-color: var(--pixel-blue); }
-    .room-photo { border-color: var(--pixel-purple); }
-    .room-next { border-color: var(--pixel-green); }
-
-    /* 중앙 - 플레이어 & 코인 */
-    .center-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    /* 플레이어 */
-    .player {
-      font-size: 36px;
-      filter: drop-shadow(2px 2px 0 var(--bg-dark));
-      transition: all 0.5s ease;
-      z-index: 10;
-      animation: idle 1s ease-in-out infinite;
-    }
-
-    @keyframes idle {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
-    }
-
-    .player.walking {
-      animation: walk 0.3s steps(2) infinite;
-    }
-
-    @keyframes walk {
-      0% { transform: translateY(0) rotate(-5deg); }
-      50% { transform: translateY(-8px) rotate(5deg); }
-      100% { transform: translateY(0) rotate(-5deg); }
-    }
-
-    /* 코인 (작게) */
-    .coin-mini {
-      font-size: 20px;
-      margin-top: 8px;
-      animation: coin-spin 2s linear infinite;
-    }
-
-    @keyframes coin-spin {
-      0% { transform: scaleX(1); }
-      25% { transform: scaleX(0.3); }
-      50% { transform: scaleX(1); }
-      75% { transform: scaleX(0.3); }
-      100% { transform: scaleX(1); }
-    }
-
-    /* 대화창 */
-    .dialog-area {
-      background: var(--bg-mid);
-      border-top: 4px solid var(--bg-light);
-      padding: 12px;
-      min-height: 140px;
-    }
-
-    .dialog-box {
-      background: var(--text);
-      border: 4px solid var(--text-dark);
-      border-radius: 8px;
-      padding: 12px;
-      color: var(--text-dark);
-      font-size: 10px;
-      line-height: 1.8;
-      min-height: 100px;
-      position: relative;
-    }
-
-    .dialog-box::before {
-      content: '▶';
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      color: var(--pixel-red);
-    }
-
-    .dialog-content {
-      padding-left: 16px;
-    }
-
-    .dialog-cursor {
-      display: inline-block;
-      animation: cursor-blink 0.5s infinite;
-    }
-
-    @keyframes cursor-blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-
-    /* 입력창 */
-    .input-area {
-      margin-top: 8px;
-      display: none;
-    }
-
-    .input-area.active {
-      display: flex;
-      gap: 8px;
-    }
-
-    .input-area input {
-      flex: 1;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 10px;
-      padding: 8px;
-      border: 3px solid var(--text-dark);
-      border-radius: 4px;
-      background: #fff;
-    }
-
-    .input-area button {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
-      padding: 8px 12px;
-      background: var(--pixel-green);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    /* 버튼 영역 */
-    .button-area {
-      background: var(--bg-dark);
-      padding: 16px;
-      display: grid;
+    .controls{
+      display:grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      border-top: 4px solid var(--bg-mid);
+      gap:8px;
+      margin-top:10px;
     }
-
-    .game-btn {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 7px;
-      padding: 14px 8px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+    .btn{
+      padding:14px 8px;
+      border-radius:12px;
+      border:none;
+      color:#fff;
+      font-family:var(--mono);
+      font-weight:900;
+      font-size:10px;
+      cursor:pointer;
       transition: all 0.2s;
-      color: white;
-      text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+    }
+    .btn:active{transform:translateY(2px)}
+    .btn:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+    .btn-start{background:linear-gradient(180deg,var(--red),#8b2525)}
+    .btn-profile{background:linear-gradient(180deg,var(--blue),#4040b0)}
+    .btn-photo{background:linear-gradient(180deg,var(--purple),#7040a0)}
+    .btn-next{background:linear-gradient(180deg,var(--green),#208040)}
+
+    .mini{
+      display:flex; justify-content:space-between;
+      margin-top:10px;
+      font-size:10px;
+      color:rgba(0,0,0,.5);
+    }
+    .pill{
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.5);
+      border:1px solid rgba(0,0,0,.1);
+      cursor:pointer;
+      font-weight:800;
+    }
+    .pill:active{transform:translateY(1px)}
+
+    /* Dialog */
+    .dlg{
+      position:absolute;
+      left:10px; right:10px; bottom:10px;
+      border-radius:12px;
+      padding:12px;
+      background:rgba(0,0,0,.7);
+      color:var(--pix);
+      font-family:var(--mono);
+      display:none;
+      z-index:10;
+      border:2px solid rgba(201,255,184,.25);
+    }
+    .dlg.show{display:block}
+    .dlg .title{font-weight:900;font-size:12px;margin-bottom:6px}
+    .dlg .body{font-size:11px;line-height:1.6;color:var(--pixDim);white-space:pre-wrap;margin:0}
+    .dlg .row{display:flex;gap:8px;margin-top:10px}
+    .dlg input{
+      flex:1;
+      padding:10px;
+      border-radius:8px;
+      border:1px solid rgba(201,255,184,.3);
+      background:rgba(0,0,0,.4);
+      color:var(--pix);
+      font-family:var(--mono);
+      font-weight:700;
+    }
+    .dlg .dBtn{
+      padding:10px 14px;
+      border-radius:8px;
+      border:none;
+      background:var(--green);
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .dlg .hint{margin-top:8px;font-size:10px;color:rgba(201,255,184,.6)}
+    .dlg .close{
+      position:absolute;top:8px;right:8px;
+      width:28px;height:28px;
+      border-radius:8px;
+      background:rgba(0,0,0,.4);
+      border:1px solid rgba(201,255,184,.2);
+      color:var(--pix);
+      display:grid;place-items:center;
+      cursor:pointer;font-weight:900;
     }
 
-    .game-btn:active {
-      transform: scale(0.95);
+    /* Loading bar */
+    .loadWrap{
+      height:10px;
+      border-radius:999px;
+      background:rgba(0,0,0,.4);
+      overflow:hidden;
+      margin-top:10px;
+      display:none;
     }
+    .loadWrap.show{display:block}
+    .loadBar{height:100%;width:0%;background:linear-gradient(90deg,rgba(120,255,120,.3),var(--green));transition:width .1s}
 
-    .btn-start { background: linear-gradient(180deg, var(--pixel-red) 0%, #8b2525 100%); }
-    .btn-profile { background: linear-gradient(180deg, var(--pixel-blue) 0%, #4040b0 100%); }
-    .btn-photo { background: linear-gradient(180deg, var(--pixel-purple) 0%, #7040a0 100%); }
-    .btn-next { background: linear-gradient(180deg, var(--pixel-green) 0%, #208040 100%); }
-
-    .game-btn.disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
+    /* Coin popup */
+    .coin-popup{
+      position:absolute;
+      font-size:14px;
+      font-weight:900;
+      color:var(--yellow);
+      text-shadow:0 0 10px var(--yellow);
+      pointer-events:none;
+      animation:coinUp 1.5s forwards;
+      z-index:20;
     }
-
-    /* 로딩 오버레이 */
-    .loading-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-      z-index: 100;
-    }
-
-    .loading-overlay.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .loading-box {
-      width: 280px;
-      background: var(--bg-mid);
-      border: 4px solid var(--pixel-green);
-      border-radius: 8px;
-      padding: 20px;
-    }
-
-    .loading-bar-bg {
-      background: var(--bg-dark);
-      height: 24px;
-      border-radius: 4px;
-      padding: 4px;
-    }
-
-    .loading-bar {
-      height: 100%;
-      width: 0%;
-      background: repeating-linear-gradient(
-        90deg,
-        var(--pixel-green) 0px,
-        var(--pixel-green) 12px,
-        var(--pixel-cyan) 12px,
-        var(--pixel-cyan) 24px
-      );
-      border-radius: 2px;
-      transition: width 0.05s linear;
-    }
-
-    .loading-text {
-      font-size: 10px;
-      color: var(--pixel-green);
-      text-align: center;
-      margin-top: 12px;
-      animation: blink 0.8s infinite;
-    }
-
-    /* 사진 표시 */
-    .photo-display {
-      display: none;
-      text-align: center;
-      margin-top: 8px;
-    }
-
-    .photo-display.show {
-      display: block;
-    }
-
-    .photo-display img {
-      max-width: 100%;
-      border: 4px solid var(--pixel-yellow);
-      border-radius: 8px;
-    }
-
-    .photo-placeholder {
-      background: var(--bg-light);
-      padding: 20px;
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 8px;
+    @keyframes coinUp{
+      0%{opacity:1;transform:translateY(0)}
+      100%{opacity:0;transform:translateY(-40px)}
     }
   </style>
 </head>
 <body>
-  <div class="game-container">
-    <!-- HUD -->
-    <div class="hud">
-      <div class="hud-left">
-        <div class="led"></div>
-        <span>WHITE_HACKER QUEST</span>
+  <div class="wrap">
+    <div class="gb">
+      <div class="top">
+        <div class="badge"><span class="dot"></span><span>WHITE_HACKER</span></div>
+        <div class="coin-display">🪙 <span id="coinCount">0</span></div>
       </div>
-      <div class="hud-right">
-        <span id="levelDisplay">LV.99</span>
-      </div>
-    </div>
 
-    <!-- 게임 화면 -->
-    <div class="game-screen">
-      <div class="map">
-        <!-- Row 1 -->
-        <div class="room room-start" data-room="start" onclick="goToRoom('start')">
-          🚪
-          <span class="room-label">START</span>
-        </div>
-        <div style="visibility:hidden"></div>
-        <div class="room room-profile locked" data-room="profile" onclick="goToRoom('profile')">
-          📋
-          <span class="room-label">PROFILE</span>
-        </div>
+      <div class="frame">
+        <div class="screen" id="screenWrap">
+          <canvas id="cv" width="320" height="320"></canvas>
 
-        <!-- Row 2 (center) -->
-        <div style="visibility:hidden"></div>
-        <div class="center-area">
-          <div class="player" id="player">🧑‍💻</div>
-          <div class="coin-mini">🪙</div>
-        </div>
-        <div style="visibility:hidden"></div>
-
-        <!-- Row 3 -->
-        <div class="room room-photo locked" data-room="photo" onclick="goToRoom('photo')">
-          📸
-          <span class="room-label">PHOTO</span>
-        </div>
-        <div style="visibility:hidden"></div>
-        <div class="room room-next" data-room="next" onclick="goToRoom('next')">
-          🚀
-          <span class="room-label">NEXT</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 대화창 -->
-    <div class="dialog-area">
-      <div class="dialog-box">
-        <div class="dialog-content" id="dialogText">
-          어서오세요, WHITE_HACKER!<br>
-          방을 선택해서 이동하세요.<span class="dialog-cursor">▼</span>
-        </div>
-        <div class="input-area" id="inputArea">
-          <input type="text" id="answerInput" placeholder="입력...">
-          <button onclick="submitAnswer()">OK</button>
-        </div>
-        <div class="photo-display" id="photoDisplay">
-          <div class="photo-placeholder">
-            📷 단체사진이 여기에 표시됩니다<br>
-            (assets/group-photo.jpg)
+          <div class="dlg" id="dlg">
+            <div class="close" id="dlgClose">✕</div>
+            <div class="title" id="dlgTitle">TITLE</div>
+            <pre class="body" id="dlgBody"></pre>
+            <div class="row" id="dlgRow" style="display:none">
+              <input id="dlgInput" type="text" placeholder="입력..." autocomplete="off">
+              <button class="dBtn" id="dlgSubmit">OK</button>
+            </div>
+            <div class="hint" id="dlgHint"></div>
+            <div class="loadWrap" id="loadWrap"><div class="loadBar" id="loadBar"></div></div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- 버튼 -->
-    <div class="button-area">
-      <button class="game-btn btn-start" onclick="goToRoom('start')">START</button>
-      <button class="game-btn btn-profile disabled" id="btnProfile" onclick="goToRoom('profile')">PROFILE</button>
-      <button class="game-btn btn-photo disabled" id="btnPhoto" onclick="goToRoom('photo')">PHOTO</button>
-      <button class="game-btn btn-next" onclick="goToRoom('next')">NEXT</button>
-    </div>
-  </div>
-
-  <!-- 로딩 오버레이 -->
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-box">
-      <div class="loading-bar-bg">
-        <div class="loading-bar" id="loadingBar"></div>
+      <div class="controls">
+        <button class="btn btn-start" id="btnStart">🚪 START</button>
+        <button class="btn btn-profile" id="btnProfile" disabled>📋 PROFILE</button>
+        <button class="btn btn-photo" id="btnPhoto" disabled>📸 PHOTO</button>
+        <button class="btn btn-next" id="btnNext" disabled>🚀 NEXT</button>
       </div>
-      <div class="loading-text" id="loadingText">LOADING...</div>
+
+      <div class="mini">
+        <span id="statusText">START를 클리어하세요</span>
+        <span class="pill" id="btnReset">RESET</span>
+      </div>
     </div>
   </div>
 
-  <script>
-    // 상태 관리
-    const state = {
-      startCleared: localStorage.getItem('wh_startCleared') === 'true',
-      photoCleared: localStorage.getItem('wh_photoCleared') === 'true',
-      currentRoom: null,
-      isMoving: false
+<script>
+(function(){
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const W = 320, H = 320;
+  const TILE = 40;
+  const COLS = 8, ROWS = 8;
+
+  // State
+  const st = {
+    startCleared: localStorage.getItem('wh_start') === '1',
+    photoCleared: localStorage.getItem('wh_photo') === '1',
+    coins: parseInt(localStorage.getItem('wh_coins') || '0')
+  };
+  function saveState(){
+    localStorage.setItem('wh_start', st.startCleared ? '1' : '0');
+    localStorage.setItem('wh_photo', st.photoCleared ? '1' : '0');
+    localStorage.setItem('wh_coins', st.coins);
+  }
+
+  // Room positions (tile coords)
+  const rooms = {
+    start:   {x:1, y:1, icon:'🚪', color:'#b33831'},
+    profile: {x:6, y:1, icon:'📋', color:'#5d60ed'},
+    photo:   {x:1, y:6, icon:'📸', color:'#9b5de5'},
+    next:    {x:6, y:6, icon:'🚀', color:'#38b764'}
+  };
+
+  // Player
+  const player = {
+    x: 4 * TILE,
+    y: 3 * TILE,
+    tx: 4, ty: 3,
+    dir: 'down',
+    frame: 0
+  };
+
+  let moving = false;
+  let path = [];
+  let onArrive = null;
+  let frameCount = 0;
+
+  // Pixel character (hood + glasses)
+  const charColors = {
+    hood: '#566c86',
+    skin: '#f4cca1',
+    glass: '#1a1c2c',
+    shirt: '#5d60ed',
+    pants: '#333c57'
+  };
+
+  function drawChar(px, py, dir, frame){
+    const s = 3; // pixel size
+    const ox = px + 8, oy = py;
+
+    // Simple front-facing character
+    ctx.fillStyle = charColors.hood;
+    // Hood
+    for(let i=0;i<6;i++) ctx.fillRect(ox+i*s, oy, s, s);
+    for(let i=-1;i<7;i++) ctx.fillRect(ox+i*s, oy+s, s, s);
+    for(let i=-1;i<7;i++) ctx.fillRect(ox+i*s, oy+s*2, s, s);
+
+    // Face
+    ctx.fillStyle = charColors.skin;
+    for(let i=0;i<4;i++) ctx.fillRect(ox+i*s+s, oy+s*3, s, s);
+    for(let i=0;i<4;i++) ctx.fillRect(ox+i*s+s, oy+s*4, s, s);
+
+    // Glasses
+    ctx.fillStyle = charColors.glass;
+    ctx.fillRect(ox+s, oy+s*3, s, s);
+    ctx.fillRect(ox+s*4, oy+s*3, s, s);
+    ctx.fillRect(ox+s*2, oy+s*3, s*2, Math.floor(s/2));
+
+    // Body
+    ctx.fillStyle = charColors.shirt;
+    for(let i=0;i<6;i++) ctx.fillRect(ox+i*s, oy+s*5, s, s);
+    for(let i=0;i<6;i++) ctx.fillRect(ox+i*s, oy+s*6, s, s);
+
+    // Laptop in hands
+    ctx.fillStyle = '#333';
+    ctx.fillRect(ox+s, oy+s*6+2, s*4, s-1);
+    ctx.fillStyle = '#6af';
+    ctx.fillRect(ox+s+1, oy+s*6+3, s*4-2, s-3);
+
+    // Legs with walk animation
+    ctx.fillStyle = charColors.pants;
+    const legOffset = moving ? (frame % 2 === 0 ? 2 : -2) : 0;
+    ctx.fillRect(ox+s, oy+s*7, s, s);
+    ctx.fillRect(ox+s*4, oy+s*7, s, s);
+    if(moving){
+      ctx.fillRect(ox+s+legOffset, oy+s*8, s, s);
+      ctx.fillRect(ox+s*4-legOffset, oy+s*8, s, s);
+    } else {
+      ctx.fillRect(ox+s, oy+s*8, s, s);
+      ctx.fillRect(ox+s*4, oy+s*8, s, s);
+    }
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,.2)';
+    ctx.fillRect(ox, oy+s*9, s*6, 2);
+  }
+
+  // Draw room tile
+  function drawRoom(room, name){
+    const px = room.x * TILE;
+    const py = room.y * TILE;
+    const locked = !st.startCleared && name !== 'start';
+
+    // Tile background
+    ctx.fillStyle = locked ? '#1a1c2c' : 'rgba(201,255,184,.08)';
+    ctx.fillRect(px+2, py+2, TILE-4, TILE-4);
+
+    // Border
+    ctx.strokeStyle = locked ? 'rgba(201,255,184,.15)' : room.color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(px+2, py+2, TILE-4, TILE-4);
+
+    // Icon
+    ctx.font = locked ? '16px sans-serif' : '20px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = locked ? 'rgba(201,255,184,.3)' : 'rgba(255,255,255,.9)';
+    ctx.fillText(locked ? '🔒' : room.icon, px + TILE/2, py + TILE/2);
+
+    // Label
+    ctx.font = '8px monospace';
+    ctx.fillStyle = locked ? 'rgba(201,255,184,.3)' : 'rgba(201,255,184,.8)';
+    ctx.fillText(name.toUpperCase(), px + TILE/2, py + TILE - 6);
+  }
+
+  // Draw decorative floor tiles
+  function drawFloor(){
+    ctx.fillStyle = '#0d1a0d';
+    ctx.fillRect(0, 0, W, H);
+
+    for(let y=0; y<ROWS; y++){
+      for(let x=0; x<COLS; x++){
+        const dark = (x + y) % 2 === 0;
+        ctx.fillStyle = dark ? '#142014' : '#1a2a1a';
+        ctx.fillRect(x*TILE+1, y*TILE+1, TILE-2, TILE-2);
+      }
+    }
+  }
+
+  // Draw coin
+  function drawCoin(x, y){
+    const bounce = Math.sin(frameCount / 10) * 3;
+    ctx.font = '16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🪙', x, y + bounce);
+  }
+
+  // Simple pathfinding (straight lines)
+  function findPath(fromX, fromY, toX, toY){
+    const p = [];
+    let cx = fromX, cy = fromY;
+    while(cx !== toX){
+      cx += (toX > cx) ? 1 : -1;
+      p.push({x: cx, y: cy});
+    }
+    while(cy !== toY){
+      cy += (toY > cy) ? 1 : -1;
+      p.push({x: cx, y: cy});
+    }
+    return p;
+  }
+
+  function walkTo(room, callback){
+    if(moving) return;
+    path = findPath(player.tx, player.ty, room.x, room.y);
+    if(path.length === 0){
+      callback && callback();
+      return;
+    }
+    moving = true;
+    onArrive = callback;
+  }
+
+  function updateMovement(){
+    if(!moving || path.length === 0) return;
+
+    const target = path[0];
+    const tx = target.x * TILE;
+    const ty = target.y * TILE;
+    const speed = 4;
+
+    // Direction
+    if(tx > player.x) player.dir = 'right';
+    else if(tx < player.x) player.dir = 'left';
+    else if(ty > player.y) player.dir = 'down';
+    else if(ty < player.y) player.dir = 'up';
+
+    // Move
+    if(player.x < tx) player.x = Math.min(player.x + speed, tx);
+    else if(player.x > tx) player.x = Math.max(player.x - speed, tx);
+    if(player.y < ty) player.y = Math.min(player.y + speed, ty);
+    else if(player.y > ty) player.y = Math.max(player.y - speed, ty);
+
+    // Arrived at waypoint
+    if(player.x === tx && player.y === ty){
+      player.tx = target.x;
+      player.ty = target.y;
+      path.shift();
+
+      if(path.length === 0){
+        moving = false;
+        onArrive && onArrive();
+        onArrive = null;
+      }
+    }
+  }
+
+  // Dialog
+  const dlg = document.getElementById('dlg');
+  const dlgTitle = document.getElementById('dlgTitle');
+  const dlgBody = document.getElementById('dlgBody');
+  const dlgRow = document.getElementById('dlgRow');
+  const dlgInput = document.getElementById('dlgInput');
+  const dlgSubmit = document.getElementById('dlgSubmit');
+  const dlgHint = document.getElementById('dlgHint');
+  const dlgClose = document.getElementById('dlgClose');
+  const loadWrap = document.getElementById('loadWrap');
+  const loadBar = document.getElementById('loadBar');
+
+  function openDlg(title, body, hint=''){
+    dlgTitle.textContent = title;
+    dlgBody.textContent = body;
+    dlgHint.textContent = hint;
+    dlgRow.style.display = 'none';
+    loadWrap.classList.remove('show');
+    dlg.classList.add('show');
+  }
+
+  function openInputDlg(title, body, hint, placeholder){
+    dlgTitle.textContent = title;
+    dlgBody.textContent = body;
+    dlgHint.textContent = hint;
+    dlgInput.placeholder = placeholder || '입력...';
+    dlgInput.value = '';
+    dlgRow.style.display = 'flex';
+    loadWrap.classList.remove('show');
+    dlg.classList.add('show');
+    setTimeout(() => dlgInput.focus(), 100);
+  }
+
+  function closeDlg(){
+    dlg.classList.remove('show');
+    loadWrap.classList.remove('show');
+  }
+
+  dlgClose.onclick = closeDlg;
+
+  // Coin popup
+  function showCoinPopup(){
+    st.coins++;
+    saveState();
+    document.getElementById('coinCount').textContent = st.coins;
+
+    const popup = document.createElement('div');
+    popup.className = 'coin-popup';
+    popup.textContent = '🪙 +1 COIN!';
+    popup.style.left = '50%';
+    popup.style.top = '40%';
+    popup.style.transform = 'translateX(-50%)';
+    document.getElementById('screenWrap').appendChild(popup);
+    setTimeout(() => popup.remove(), 1500);
+  }
+
+  // Update buttons
+  function updateButtons(){
+    const profile = document.getElementById('btnProfile');
+    const photo = document.getElementById('btnPhoto');
+    const next = document.getElementById('btnNext');
+    const status = document.getElementById('statusText');
+
+    if(st.startCleared){
+      profile.disabled = false;
+      photo.disabled = false;
+      next.disabled = false;
+      status.textContent = '모든 방이 열렸습니다!';
+    } else {
+      profile.disabled = true;
+      photo.disabled = true;
+      next.disabled = true;
+      status.textContent = 'START를 클리어하세요';
+    }
+
+    document.getElementById('coinCount').textContent = st.coins;
+  }
+
+  // Room actions
+  const ANSWER_FLOOR = '4';
+  const ANSWER_FLAG = 'FLAG{KYB}';
+
+  function showStart(){
+    if(st.startCleared){
+      openDlg('✅ CLEARED', '이미 클리어한 방입니다!\n다른 방을 탐험하세요.');
+      return;
+    }
+    openInputDlg(
+      '🚪 START GATE',
+      'WHITE_HACKER가 근무한\n건물의 층은?\n\n(숫자만 입력하세요)',
+      '정답을 맞히면 모든 방이 열립니다.',
+      '예: 4'
+    );
+
+    dlgSubmit.onclick = () => {
+      const v = dlgInput.value.trim();
+      if(v === ANSWER_FLOOR){
+        st.startCleared = true;
+        saveState();
+        showCoinPopup();
+        updateButtons();
+        openDlg(
+          '✅ ACCESS GRANTED!',
+          '환영합니다!\nWHITE_HACKER 모드 활성화!\n\n🔓 모든 방이 해제되었습니다.',
+          '버튼을 눌러 다른 방을 탐험하세요.'
+        );
+      } else {
+        dlgHint.textContent = '❌ 틀렸습니다. 다시 시도하세요.';
+      }
     };
+  }
 
-    // 초기화
-    function init() {
-      if (state.startCleared) {
-        unlockRooms();
-      }
-      updateUI();
+  function showProfile(){
+    dlgTitle.textContent = '📋 PROFILE';
+    dlgBody.innerHTML = `<span style="color:var(--pix);font-size:13px;font-weight:900;">★ WHITE_HACKER ★</span>
+<span style="color:rgba(201,255,184,.5);font-size:9px;">FAREWELL QUEST 주인공</span>
+
+<span style="color:rgba(201,255,184,.6);">──────────────────</span>
+<span style="color:var(--pixDim);">소속:</span> 서울남부지방검찰청
+<span style="color:var(--pixDim);">부서:</span> 가상자산합동수사부
+<span style="color:var(--pixDim);">기간:</span> 2025.1.25 ~ 2026.1.23
+<span style="color:rgba(201,255,184,.6);">──────────────────</span>
+
+🏆 <span style="color:#f4b41a;">DFC 2023 대상 수상자</span>
+
+<span style="color:var(--pix);">우리 부서의 든든한 기술 브레인!</span>
+<span style="color:var(--pix);">어려운 문제도 척척, CTF도 척척!</span>
+
+<span style="color:rgba(201,255,184,.6);">그동안 정말 고생하셨습니다.</span>
+<span style="color:rgba(201,255,184,.6);">다음 스테이지에서도 화이팅! 💚</span>`;
+    dlgHint.textContent = '';
+    dlgRow.style.display = 'none';
+    loadWrap.classList.remove('show');
+    dlg.classList.add('show');
+  }
+
+  function showPhoto(){
+    if(st.photoCleared){
+      showPhotoResult();
+      return;
     }
+    openInputDlg(
+      '📸 PHOTO VAULT',
+      '매주 목요일, 정기 테니스\n모임의 클럽 이름은?\n\n형식: FLAG{CLUB}\n(대문자 알파벳만)',
+      '정답을 맞히면 사진이 나타납니다.',
+      '예: FLAG{ABC}'
+    );
 
-    // 방 잠금 해제
-    function unlockRooms() {
-      document.querySelectorAll('.room.locked').forEach(r => r.classList.remove('locked'));
-      document.getElementById('btnProfile').classList.remove('disabled');
-      document.getElementById('btnPhoto').classList.remove('disabled');
-    }
-
-    // UI 업데이트
-    function updateUI() {
-      if (state.startCleared) {
-        unlockRooms();
-      }
-    }
-
-    // 방으로 이동
-    function goToRoom(roomName) {
-      if (state.isMoving) return;
-
-      // 잠긴 방 체크
-      if ((roomName === 'profile' || roomName === 'photo') && !state.startCleared) {
-        showDialog('🔒 잠긴 방입니다!<br>먼저 START를 클리어하세요.');
-        return;
-      }
-
-      state.isMoving = true;
-      state.currentRoom = roomName;
-
-      // 플레이어 이동 애니메이션
-      const player = document.getElementById('player');
-      player.classList.add('walking');
-
-      setTimeout(() => {
-        player.classList.remove('walking');
-        state.isMoving = false;
-        enterRoom(roomName);
-      }, 800);
-    }
-
-    // 방 입장
-    function enterRoom(roomName) {
-      switch(roomName) {
-        case 'start':
-          if (state.startCleared) {
-            showDialog('✅ 이미 클리어한 방입니다!<br>다른 방을 탐험하세요.');
-          } else {
-            showDialog('🚪 START GATE<br><br>WHITE_HACKER가 근무한<br>건물의 층은?<br><br>(숫자만 입력하세요)', true, 'start');
-          }
-          break;
-
-        case 'profile':
-          showDialog(
-            '📋 PROFILE<br><br>' +
-            '소속: 서울남부지방검찰청<br>' +
-            '부서: 가상자산합동수사부<br>' +
-            '기간: 2025.1.25 ~ 2026.1.23<br><br>' +
-            '🏆 DFC 2023 대상<br><br>' +
-            '그동안 정말 고생하셨습니다!'
-          );
-          break;
-
-        case 'photo':
-          if (state.photoCleared) {
-            showDialog('📸 PHOTO VAULT<br><br>숨겨진 사진이 공개되었습니다!', false, null, true);
-          } else {
-            showDialog(
-              '📸 PHOTO VAULT<br><br>' +
-              '매주 목요일, 정기 테니스<br>모임의 클럽 이름은?<br><br>' +
-              '형식: flag{CLUB}<br>' +
-              '(대문자 알파벳만)', true, 'photo');
-          }
-          break;
-
-        case 'next':
-          showDialog('🚀 NEXT STAGE<br><br>ctftime.org로 이동합니다...');
-          setTimeout(startLoading, 1500);
-          break;
-      }
-    }
-
-    // 대화 표시
-    function showDialog(text, showInput = false, inputType = null, showPhoto = false) {
-      const dialogText = document.getElementById('dialogText');
-      const inputArea = document.getElementById('inputArea');
-      const photoDisplay = document.getElementById('photoDisplay');
-
-      dialogText.innerHTML = text + '<span class="dialog-cursor">▼</span>';
-      
-      if (showInput) {
-        inputArea.classList.add('active');
-        inputArea.dataset.type = inputType;
-        document.getElementById('answerInput').value = '';
-        document.getElementById('answerInput').focus();
+    dlgSubmit.onclick = () => {
+      const v = dlgInput.value.trim().toUpperCase();
+      if(v === ANSWER_FLAG){
+        st.photoCleared = true;
+        saveState();
+        showCoinPopup();
+        showPhotoResult();
+      } else if(!v.match(/^FLAG\{[A-Z]+\}$/)){
+        dlgHint.textContent = '⚠️ FLAG{...} 형식으로 입력하세요.';
       } else {
-        inputArea.classList.remove('active');
+        dlgHint.textContent = '❌ WRONG FLAG. 다시 시도하세요.';
       }
+    };
+  }
 
-      if (showPhoto) {
-        photoDisplay.classList.add('show');
+  function showPhotoResult(){
+    dlgTitle.textContent = '📸 UNLOCKED!';
+    dlgBody.innerHTML = '✅ 숨겨진 사진이 공개됩니다!<br><br><img id="photoImg" src="s0uthern_v1rtual_mem0ry.JPG" style="width:100%;border-radius:8px;border:2px solid var(--pix);margin-top:8px;"><div id="photoError" style="display:none;color:var(--pixDim);font-size:10px;padding:20px;background:rgba(0,0,0,.3);border-radius:8px;text-align:center;">📷 사진 로딩 중...<br><br>GitHub에 사진 파일을 올렸는지 확인하세요!<br>파일명: s0uthern_v1rtual_mem0ry.JPG</div>';
+    dlgHint.textContent = '함께해서 행복했습니다! 💚';
+    dlgRow.style.display = 'none';
+    loadWrap.classList.remove('show');
+    dlg.classList.add('show');
+    
+    // 이미지 로드 에러 처리
+    const img = document.getElementById('photoImg');
+    const errDiv = document.getElementById('photoError');
+    img.onerror = function(){
+      img.style.display = 'none';
+      errDiv.style.display = 'block';
+    };
+  }
+
+  function showNext(){
+    openDlg(
+      '🚀 NEXT STAGE',
+      'ctftime.org로 이동합니다...',
+      '로딩 중...'
+    );
+    loadWrap.classList.add('show');
+    loadBar.style.width = '0%';
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15 + 5;
+      if(progress >= 100){
+        progress = 100;
+        loadBar.style.width = '100%';
+        clearInterval(interval);
+        setTimeout(() => {
+          window.location.href = 'https://ctftime.org';
+        }, 300);
       } else {
-        photoDisplay.classList.remove('show');
+        loadBar.style.width = progress + '%';
       }
+    }, 100);
+  }
+
+  // Button events
+  document.getElementById('btnStart').onclick = () => {
+    walkTo(rooms.start, showStart);
+  };
+  document.getElementById('btnProfile').onclick = () => {
+    if(!st.startCleared) return;
+    walkTo(rooms.profile, showProfile);
+  };
+  document.getElementById('btnPhoto').onclick = () => {
+    if(!st.startCleared) return;
+    walkTo(rooms.photo, showPhoto);
+  };
+  document.getElementById('btnNext').onclick = () => {
+    if(!st.startCleared) return;
+    walkTo(rooms.next, showNext);
+  };
+
+  document.getElementById('btnReset').onclick = () => {
+    st.startCleared = false;
+    st.photoCleared = false;
+    st.coins = 0;
+    saveState();
+    player.x = 4 * TILE;
+    player.y = 3 * TILE;
+    player.tx = 4;
+    player.ty = 3;
+    moving = false;
+    path = [];
+    updateButtons();
+    closeDlg();
+    openDlg('🔄 RESET', '진행 상태가 초기화되었습니다.\n\nSTART부터 다시 시작하세요.', '');
+  };
+
+  // Enter key for input
+  dlgInput.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') dlgSubmit.click();
+  });
+
+  // Render loop
+  function render(){
+    frameCount++;
+    updateMovement();
+
+    // Clear & draw floor
+    drawFloor();
+
+    // Draw rooms
+    for(const [name, room] of Object.entries(rooms)){
+      drawRoom(room, name);
     }
 
-    // 답 제출
-    function submitAnswer() {
-      const input = document.getElementById('answerInput');
-      const type = document.getElementById('inputArea').dataset.type;
-      const answer = input.value.trim();
+    // Draw center coin (decorative)
+    drawCoin(W/2, H/2 - 20);
 
-      if (type === 'start') {
-        if (answer === '4') {
-          state.startCleared = true;
-          localStorage.setItem('wh_startCleared', 'true');
-          unlockRooms();
-          showDialog('✅ ACCESS GRANTED!<br><br>환영합니다!<br>WHITE_HACKER 모드가<br>활성화되었습니다.<br><br>🔓 모든 방이 해제되었습니다!');
-        } else {
-          showDialog('❌ ACCESS DENIED<br><br>층수가 틀렸습니다.<br>다시 시도하세요.', true, 'start');
-        }
-      } else if (type === 'photo') {
-        if (answer.toUpperCase() === 'FLAG{KYB}') {
-          state.photoCleared = true;
-          localStorage.setItem('wh_photoCleared', 'true');
-          showDialog('✅ 정답!<br><br>숨겨진 사진이 나타납니다!', false, null, true);
-        } else if (!answer.startsWith('flag{') && !answer.startsWith('FLAG{')) {
-          showDialog('⚠️ FORMAT ERROR<br><br>flag{...} 형태로<br>입력하세요.', true, 'photo');
-        } else {
-          showDialog('❌ WRONG FLAG<br><br>다시 시도하세요.', true, 'photo');
-        }
-      }
-    }
+    // Draw player
+    drawChar(player.x, player.y, player.dir, Math.floor(frameCount/8));
 
-    // Enter 키 제출
-    document.getElementById('answerInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') submitAnswer();
-    });
+    // HUD
+    ctx.fillStyle = 'rgba(201,255,184,.7)';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(st.startCleared ? '🔓 UNLOCKED' : '🔒 LOCKED', 8, 8);
 
-    // 로딩 시작
-    function startLoading() {
-      const overlay = document.getElementById('loadingOverlay');
-      const bar = document.getElementById('loadingBar');
-      const text = document.getElementById('loadingText');
+    requestAnimationFrame(render);
+  }
 
-      overlay.classList.add('show');
-      bar.style.width = '0%';
+  // Init
+  updateButtons();
+  render();
 
-      const messages = [
-        'Resolving DNS...',
-        'Syncing flags...',
-        'Entering arena...',
-        'GO!'
-      ];
-
-      const start = performance.now();
-      const duration = 2000;
-
-      function step(t) {
-        const p = Math.min(1, (t - start) / duration);
-        bar.style.width = (p * 100) + '%';
-
-        if (p < 0.25) text.textContent = messages[0];
-        else if (p < 0.5) text.textContent = messages[1];
-        else if (p < 0.85) text.textContent = messages[2];
-        else text.textContent = messages[3];
-
-        if (p < 1) {
-          requestAnimationFrame(step);
-        } else {
-          setTimeout(() => {
-            window.location.href = 'https://ctftime.org';
-          }, 300);
-        }
-      }
-
-      requestAnimationFrame(step);
-    }
-
-    // 초기화 실행
-    init();
-  </script>
+  // Welcome message
+  if(!st.startCleared){
+    openDlg(
+      '🎮 WHITE_HACKER QUEST',
+      '어서오세요!\n\nSTART 버튼을 눌러\n관문을 통과하세요.\n\n정답을 맞히면 코인을 획득하고\n다른 방이 열립니다!',
+      '버튼을 눌러 캐릭터를 이동시키세요.'
+    );
+  }
+})();
+</script>
 </body>
 </html>
